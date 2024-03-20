@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="ZXing">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/ZXing/javase-3.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/ZXing/core-3.0.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/ZXing/core-3.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/ZXing/javase-3.0.0-javadoc.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
