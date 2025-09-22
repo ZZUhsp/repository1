@@ -237,39 +237,40 @@ class CollisionDetector:
             schemdraw_params = component.get('schemdraw_params', {})
 
             try:
+                length = self.get_unit_by_element_type(comp_type)
                 if comp_type == 'voltage_source':
-                    element = elm.SourceV().at(position)
+                    element = elm.SourceV(l = length).at(position)
                     element = self.reader_drawer._apply_schemdraw_params_safely(
                         element, schemdraw_params, [], comp_type)
                     if label.strip():
                         element = element.label(label, 'top')
 
                 elif comp_type == 'resistor':
-                    element = ElementClass().at(position)
+                    element = ElementClass(l = length).at(position)
                     element = self.reader_drawer._apply_schemdraw_params_safely(
                         element, schemdraw_params, ['length', 'theta'], comp_type)
                     if label.strip():
                         element = element.label(label, 'top')
 
                 elif comp_type == 'capacitor':
-                    element = ElementClass().at(position)
+                    element = ElementClass(l = length).at(position)
                     element = self.reader_drawer._apply_schemdraw_params_safely(
                         element, schemdraw_params, ['length', 'theta', 'width'], comp_type)
                     if label.strip():
                         element = element.label(label, 'bottom')
 
                 elif comp_type == 'LED':
-                    element = ElementClass().at(position)
+                    element = ElementClass(l = length).at(position)
                     element = self.reader_drawer._apply_schemdraw_params_safely(
                         element, schemdraw_params, ['length', 'theta', 'width'], comp_type)
                     if label.strip():
                         element = element.label(label, 'right')
 
                 elif comp_type == 'ground':
-                    element = elm.Ground().at(position)
+                    element = elm.Ground(l = length).at(position)
 
                 else:
-                    element = ElementClass().at(position)
+                    element = ElementClass(l = length).at(position)
                     element = self.reader_drawer._apply_schemdraw_params_safely(
                         element, schemdraw_params, [], comp_type)
                     if label.strip():
@@ -410,29 +411,276 @@ class CollisionDetector:
         return bbox
 
 
-    def draw_collision_free_circuit(self, output_file='collision_free_circuit.png', json_out='components_bbox.json', dpi=200):
-        """
-        绘制并保存电路图，同时把每个元件的 bbox、type、label 一并保存到 json_out。
-        返回 (output_file, out_bbox_img, json_out)
-        """
-        print(f"正在绘制避免碰撞的电路图到 {output_file}...")
+    # def draw_collision_free_circuit(self, output_file='collision_free_circuit.png', json_out='components_bbox.json', dpi=200):
+    #     """
+    #     绘制并保存电路图，同时把每个元件的 bbox、type、label 一并保存到 json_out。
+    #     返回 (output_file, out_bbox_img, json_out)
+    #     """
+    #     print(f"正在绘制避免碰撞的电路图到 {output_file}...")
 
-        adjusted_elements = self.create_adjusted_elements()
+    #     adjusted_elements = self.create_adjusted_elements()
 
-        # inserted 存 (label, element, type)
+    #     # inserted 存 (label, element, type)
+    #     inserted = []
+
+    #     from schemdraw import Drawing
+    #     with Drawing(file=output_file, transparent=False) as d:
+    #         d.config(fontsize=10)
+    #         d.config(unit=1.6)
+
+    #         # 添加芯片（IC）
+    #         if getattr(self.reader_drawer, 'ic_element', None):
+    #             ic_elem = self.reader_drawer.ic_element
+    #             if not getattr(ic_elem, 'name', None):
+    #                 ic_elem.name = 'IC'
+    #             # 保留 IC 在图上的显示（如果你也想隐藏 IC，把下面两行注释或用 clear_display_fields(ic_elem)）
+    #             try:
+    #                 if hasattr(ic_elem, 'label') and callable(ic_elem.label):
+    #                     ic_elem.label(ic_elem.name)
+    #                 elif hasattr(ic_elem, 'labeltext'):
+    #                     ic_elem.labeltext = ic_elem.name
+    #             except Exception:
+    #                 pass
+    #             d += ic_elem
+    #             inserted.append((ic_elem.name, ic_elem, 'IC'))
+
+    #         # 添加调整后的组件到绘图
+    #         for comp_id, comp_info in adjusted_elements.items():
+    #             elem = comp_info['element']
+    #             comp_type = comp_info.get('type', 'unknown')
+
+    #             # label 优先 element.name
+    #             label = getattr(elem, 'name', None) or comp_id
+    #             if not getattr(elem, 'name', None):
+    #                 elem.name = label
+    #             else:
+    #                 # 对 IC 保持显示（如需隐藏 IC 也可改为 clear_display_fields(elem)）
+    #                 try:
+    #                     if hasattr(elem, 'label') and callable(elem.label):
+    #                         elem.label(elem.name)
+    #                     elif hasattr(elem, 'labeltext'):
+    #                         elem.labeltext = elem.name
+    #                 except Exception:
+    #                     pass
+    #             print(f"After cleaning, elem.label: {elem.label}")            
+    #             d += elem
+    #             inserted.append((label, elem, comp_type))
+    #             print(f"已添加调整后的组件 {comp_id} (type={comp_type}) 到位置 {comp_info.get('position','?')}")
+
+    #         # 添加引脚点（Dot）但不记录到 inserted（我们会跳过 Dot）
+    #         if getattr(self.reader_drawer, 'ic_element', None):
+    #             for pin_num, pin_name in getattr(self.reader_drawer, 'pins', {}).items():
+    #                 try:
+    #                     anchor = getattr(self.reader_drawer.ic_element, pin_name)
+    #                     d += elm.Dot().at(anchor)
+    #                 except Exception:
+    #                     pass
+
+    #     # 确保文件存在
+    #     if not os.path.exists(output_file):
+    #         raise RuntimeError(f"绘图文件未生成：{output_file}")
+
+    #     # 读取图像，找到 content bbox
+    #     img = Image.open(output_file).convert("RGB")
+    #     img_w, img_h = img.size
+    #     content_left, content_top, content_right, content_bottom = self._find_content_bbox(img)
+    #     content_w = content_right - content_left
+    #     content_h = content_bottom - content_top
+    #     if content_w <= 0 or content_h <= 0:
+    #         content_left, content_top, content_right, content_bottom = 0, 0, img_w, img_h
+    #         content_w, content_h = img_w, img_h
+
+    #     # 估计 drawing 全局 bbox（units）——基于 inserted 中的元素 get_bbox(transform=True)
+    #     xmin_g = float('inf'); ymin_g = float('inf'); xmax_g = -float('inf'); ymax_g = -float('inf')
+    #     for _, elem, _ in inserted:
+    #         try:
+    #             exmin, eymin, exmax, eymax = elem.get_bbox(transform=True)
+    #             xmin_g = min(xmin_g, exmin)
+    #             ymin_g = min(ymin_g, eymin)
+    #             xmax_g = max(xmax_g, exmax)
+    #             ymax_g = max(ymax_g, eymax)
+    #         except Exception:
+    #             pass
+
+    #     if xmax_g == -float('inf'):
+    #         xmin_g, ymin_g, xmax_g, ymax_g = 0.0, 0.0, 1.0, 1.0
+
+    #     xmin_g -= 0.1; ymin_g -= 0.1; xmax_g += 0.1; ymax_g += 0.1
+    #     width_units = xmax_g - xmin_g
+    #     height_units = ymax_g - ymin_g
+    #     if width_units <= 0 or height_units <= 0:
+    #         width_units, height_units = 1.0, 1.0
+
+    #     # units -> pixels 映射参数
+    #     scale_x = content_w / width_units
+    #     scale_y = content_h / height_units
+    #     offset_x = content_left
+    #     offset_y = content_top
+
+    #     components = {}
+    #     # 也准备一个简洁的 label->pixel bbox 映射
+    #     bboxes_pixel_simple = {}
+
+    #     for label, elem, comp_type in inserted:
+    #         clsname = elem.__class__.__name__.lower()
+    #         if 'dot' in clsname:
+    #             continue
+
+    #         try:
+    #             exmin, eymin, exmax, eymax = elem.get_bbox(transform=True)
+    #         except Exception as e:
+    #             components[label] = {'error': f'get_bbox_failed: {e}', 'type': comp_type}
+    #             continue
+
+    #         # relative units (以 drawing 左上角为 (0,0)，Y 向下为正)
+    #         rel_xmin = exmin - xmin_g
+    #         rel_xmax = exmax - xmin_g
+    #         rel_ymin = ymax_g - exmax if False else ymax_g - eymax  # just clarity; use eymax
+    #         rel_ymin = ymax_g - eymax
+    #         rel_ymax = ymax_g - eymin
+
+    #         center_x = (exmin + exmax) / 2.0
+    #         center_y = (eymin + eymax) / 2.0
+    #         rel_center_x = center_x - xmin_g
+    #         rel_center_y = ymax_g - center_y
+
+    #         # units -> pixels (image left-top origin)
+    #         left_px  = rel_xmin * scale_x + offset_x
+    #         top_px   = rel_ymin * scale_y + offset_y
+    #         right_px = rel_xmax * scale_x + offset_x
+    #         bottom_px= rel_ymax * scale_y + offset_y
+
+    #         left_px_i   = int(max(0, round(left_px)))
+    #         top_px_i    = int(max(0, round(top_px)))
+    #         right_px_i  = int(min(img_w - 1, round(right_px)))
+    #         bottom_px_i = int(min(img_h - 1, round(bottom_px)))
+
+    #         # 这里的label实际上就是组件的类型 因此直接赋值comp_type
+    #         components[label] = {
+    #             'label': comp_type,
+    #             'type': comp_type,
+    #             'class': elem.__class__.__name__,
+    #             'global_bbox_units': (exmin, eymin, exmax, eymax),
+    #             'relative_bbox_units_from_drawing_topleft': (rel_xmin, rel_ymin, rel_xmax, rel_ymax),
+    #             'relative_center_units_from_drawing_topleft': (rel_center_x, rel_center_y),
+    #             'bbox_pixels_from_image_topleft': (left_px_i, top_px_i, right_px_i, bottom_px_i)
+    #         }
+
+    #         bboxes_pixel_simple[label] = (left_px_i, top_px_i, right_px_i, bottom_px_i)
+
+    #     # 在图片上画 bbox
+    #     vis = img.copy()
+    #     draw = ImageDraw.Draw(vis)
+    #     line_w = max(1, int(min(img_w, img_h) * 0.004))
+    #     for info in components.values():
+    #         if 'bbox_pixels_from_image_topleft' not in info:
+    #             continue
+    #         l,t,r,b = info['bbox_pixels_from_image_topleft']
+    #         for w in range(line_w):
+    #             draw.rectangle([l-w, t-w, r+w, b+w], outline=(255,0,0))
+    #     out_bbox_img = os.path.splitext(output_file)[0] + "_bbox.png"
+    #     vis.save(out_bbox_img)
+
+    #     # 写 JSON
+    #     out_data = {
+    #         'image': {
+    #             'file': output_file,
+    #             'bbox_image': out_bbox_img,
+    #             'width_px': img_w,
+    #             'height_px': img_h,
+    #             'content_bbox_px': (content_left, content_top, content_right, content_bottom)
+    #         },
+    #         'drawing_bbox_units': (xmin_g, ymin_g, xmax_g, ymax_g),
+    #         'scale': {'scale_x_px_per_unit': scale_x, 'scale_y_px_per_unit': scale_y, 'offset_px': (offset_x, offset_y)},
+    #         'components': components
+    #     }
+    #     with open(json_out, 'w', encoding='utf-8') as jf:
+    #         json.dump(out_data, jf, ensure_ascii=False, indent=2)
+
+    #     print(f"已保存：图像 {output_file}，带 bbox 图片 {out_bbox_img}，完整 JSON {json_out}")
+    #     return output_file, out_bbox_img, json_out
+    
+
+    def get_unit_by_element_type(self, element_type: str) -> float:
+        """
+        根据元件类型返回 Schemdraw 的 unit 长度。
+        参数:
+        element_type (str): 元件的类型，例如 'resistor'、'capacitor'、'ic'。
+        返回:
+        float: 对应的 unit 长度。如果类型不存在，返回默认值 1.0。
+        """
+
+        # 使用字典来映射元件类型和 unit 值
+        unit_map: Dict[str, float] = {
+            'resistor': 1.15,   # 电阻
+            'capacitor': 0.4,  # 电容
+            'led': 0.7,        # LED
+            'voltage_source': 1.15,
+            'ground': 0.5 # 接地
+        }
+
+        # 使用 .get() 方法，如果找不到对应的键，则返回一个默认值（这里是 1.0）
+        return unit_map.get(element_type.lower(), 1.0)
+
+    # 获取包含所有元件的最小边界框
+    def _compute_drawing_units_bbox(self, inserted: List[Tuple[str, object, str]], pad_unit: float = 0.05):
+        xmin_g = float('inf'); ymin_g = float('inf'); xmax_g = -float('inf'); ymax_g = -float('inf')
+        for _, elem, _ in inserted:
+            try:
+                if hasattr(elem, 'get_bbox'):
+                    bbox_u = elem.get_bbox(transform=True)
+                elif hasattr(elem, 'bbox'):
+                    bbox_u = elem.bbox if isinstance(elem.bbox, tuple) else elem.bbox()
+                else:
+                    bbox_u = None
+                if bbox_u:
+                    exmin, eymin, exmax, eymax = bbox_u
+                    xmin_g = min(xmin_g, exmin)
+                    ymin_g = min(ymin_g, eymin)
+                    xmax_g = max(xmax_g, exmax)
+                    ymax_g = max(ymax_g, eymax)
+            except Exception:
+                continue
+        if xmax_g == -float('inf'):
+            xmin_g, ymin_g, xmax_g, ymax_g = 0.0, 0.0, 1.0, 1.0
+        xmin_g -= pad_unit; ymin_g -= pad_unit; xmax_g += pad_unit; ymax_g += pad_unit
+        return xmin_g, ymin_g, xmax_g, ymax_g
+
+    def draw_collision_free_circuit(self,
+                            output_image: str = 'circuit.png',
+                            draw_boxes: bool = True,
+                            box_color=(255, 0, 0),
+                            box_line_frac: float = 0.002) -> Dict[str, Any]:
+        """
+        绘制电路图并在图上画出每个组件的矩形框（像素坐标，图像左上为原点）。
+        返回一个字典，包含：
+        - 'image_file': 原始绘图文件路径 (PNG)
+        - 'bbox_image_file': 带框的可视化图路径 (PNG)
+        - 'img_w','img_h'
+        - 'content_bbox_px': (left, top, right, bottom)
+        - 'drawing_bbox_units': (xmin_g, ymin_g, xmax_g, ymax_g)
+        - 'scale': {'scale_x_px_per_unit', 'scale_y_px_per_unit', 'offset_px'}
+        - 'components': dict mapping label -> component info (包含像素 bbox 等)
+
+        说明：
+        - 该函数负责绘图、units->pixels 转换，并生成带框图像文件。
+        - 不会写 JSON（由 PART B 负责）。
+        """
         inserted = []
 
+        # 用 schemdraw 绘制电路并写出图像（output_image）
         from schemdraw import Drawing
-        with Drawing(file=output_file, transparent=False) as d:
-            d.config(fontsize=10)
-            d.config(unit=1.6)
+        import schemdraw.elements as sdelems
 
-            # 添加芯片（IC）
+        with Drawing(file=output_image, transparent=False) as d:
+            d.config(fontsize=10)
+            # d.config(unit=0.7)
+
+            # 如果有 IC，先加 IC
             if getattr(self.reader_drawer, 'ic_element', None):
                 ic_elem = self.reader_drawer.ic_element
                 if not getattr(ic_elem, 'name', None):
                     ic_elem.name = 'IC'
-                # 保留 IC 在图上的显示（如果你也想隐藏 IC，把下面两行注释或用 clear_display_fields(ic_elem)）
                 try:
                     if hasattr(ic_elem, 'label') and callable(ic_elem.label):
                         ic_elem.label(ic_elem.name)
@@ -443,17 +691,15 @@ class CollisionDetector:
                 d += ic_elem
                 inserted.append((ic_elem.name, ic_elem, 'IC'))
 
-            # 添加调整后的组件到绘图
+            # 添加调整后的组件
+            adjusted_elements = self.create_adjusted_elements()
             for comp_id, comp_info in adjusted_elements.items():
                 elem = comp_info['element']
                 comp_type = comp_info.get('type', 'unknown')
-
-                # label 优先 element.name
                 label = getattr(elem, 'name', None) or comp_id
                 if not getattr(elem, 'name', None):
                     elem.name = label
                 else:
-                    # 对 IC 保持显示（如需隐藏 IC 也可改为 clear_display_fields(elem)）
                     try:
                         if hasattr(elem, 'label') and callable(elem.label):
                             elem.label(elem.name)
@@ -461,143 +707,128 @@ class CollisionDetector:
                             elem.labeltext = elem.name
                     except Exception:
                         pass
-                print(f"After cleaning, elem.label: {elem.label}")            
+                print(f"{comp_type} 对应的unit为{self.get_unit_by_element_type(comp_type)}")
                 d += elem
                 inserted.append((label, elem, comp_type))
-                print(f"已添加调整后的组件 {comp_id} (type={comp_type}) 到位置 {comp_info.get('position','?')}")
 
-            # 添加引脚点（Dot）但不记录到 inserted（我们会跳过 Dot）
+            # 绘制 pins 做可视化
             if getattr(self.reader_drawer, 'ic_element', None):
                 for pin_num, pin_name in getattr(self.reader_drawer, 'pins', {}).items():
                     try:
                         anchor = getattr(self.reader_drawer.ic_element, pin_name)
-                        d += elm.Dot().at(anchor)
+                        d += sdelems.Dot().at(anchor)
                     except Exception:
                         pass
 
-        # 确保文件存在
-        if not os.path.exists(output_file):
-            raise RuntimeError(f"绘图文件未生成：{output_file}")
-
-        # 读取图像，找到 content bbox
-        img = Image.open(output_file).convert("RGB")
+        # 读取图像并找到 content bbox
+        if not os.path.exists(output_image):
+            raise FileNotFoundError(output_image)
+        img = Image.open(output_image).convert("RGB")
         img_w, img_h = img.size
-        content_left, content_top, content_right, content_bottom = self._find_content_bbox(img)
+
+        # find content bbox 
+        px = img.load()
+        left = img_w; right = 0; top = img_h; bottom = 0
+        # 遍历图片 找到有非白像素组成的最大矩形
+        for j in range(img_h):
+            for i in range(img_w):
+                if px[i, j] != (255,255,255):
+                    left = min(left, i); right = max(right, i)
+                    top = min(top, j); bottom = max(bottom, j)
+        if right < left or bottom < top:
+            content_left, content_top, content_right, content_bottom = 0, 0, img_w, img_h
+        else:
+            content_left, content_top, content_right, content_bottom = max(0,left-1), max(0,top-1), min(img_w, right+1), min(img_h, bottom+1)
         content_w = content_right - content_left
         content_h = content_bottom - content_top
         if content_w <= 0 or content_h <= 0:
             content_left, content_top, content_right, content_bottom = 0, 0, img_w, img_h
             content_w, content_h = img_w, img_h
 
-        # 估计 drawing 全局 bbox（units）——基于 inserted 中的元素 get_bbox(transform=True)
-        xmin_g = float('inf'); ymin_g = float('inf'); xmax_g = -float('inf'); ymax_g = -float('inf')
-        for _, elem, _ in inserted:
-            try:
-                exmin, eymin, exmax, eymax = elem.get_bbox(transform=True)
-                xmin_g = min(xmin_g, exmin)
-                ymin_g = min(ymin_g, eymin)
-                xmax_g = max(xmax_g, exmax)
-                ymax_g = max(ymax_g, eymax)
-            except Exception:
-                pass
-
-        if xmax_g == -float('inf'):
-            xmin_g, ymin_g, xmax_g, ymax_g = 0.0, 0.0, 1.0, 1.0
-
-        xmin_g -= 0.1; ymin_g -= 0.1; xmax_g += 0.1; ymax_g += 0.1
+        # 计算 drawing 全局单位 bbox
+        drawing_bbox_units = self._compute_drawing_units_bbox(inserted)
+        xmin_g, ymin_g, xmax_g, ymax_g = drawing_bbox_units
         width_units = xmax_g - xmin_g
         height_units = ymax_g - ymin_g
         if width_units <= 0 or height_units <= 0:
             width_units, height_units = 1.0, 1.0
 
-        # units -> pixels 映射参数
+        # units -> pixels 映射
         scale_x = content_w / width_units
         scale_y = content_h / height_units
         offset_x = content_left
         offset_y = content_top
 
         components = {}
-        # 也准备一个简洁的 label->pixel bbox 映射
-        bboxes_pixel_simple = {}
-
         for label, elem, comp_type in inserted:
             clsname = elem.__class__.__name__.lower()
             if 'dot' in clsname:
                 continue
-
             try:
-                exmin, eymin, exmax, eymax = elem.get_bbox(transform=True)
+                if hasattr(elem, 'get_bbox'):
+                    exmin, eymin, exmax, eymax = elem.get_bbox(transform=True)
+                elif hasattr(elem, 'bbox'):
+                    bb = elem.bbox
+                    exmin, eymin, exmax, eymax = bb if isinstance(bb, tuple) else bb()
+                else:
+                    raise RuntimeError("no bbox")
             except Exception as e:
                 components[label] = {'error': f'get_bbox_failed: {e}', 'type': comp_type}
                 continue
 
-            # relative units (以 drawing 左上角为 (0,0)，Y 向下为正)
-            rel_xmin = exmin - xmin_g
-            rel_xmax = exmax - xmin_g
-            rel_ymin = ymax_g - exmax if False else ymax_g - eymax  # just clarity; use eymax
-            rel_ymin = ymax_g - eymax
-            rel_ymax = ymax_g - eymin
+            # convert to left-top origin
+            left_px  = (exmin - xmin_g) * scale_x + offset_x
+            right_px = (exmax - xmin_g) * scale_x + offset_x
+            top_px   = (ymax_g - eymax) * scale_y + offset_y
+            bottom_px= (ymax_g - eymin) * scale_y + offset_y
 
-            center_x = (exmin + exmax) / 2.0
-            center_y = (eymin + eymax) / 2.0
-            rel_center_x = center_x - xmin_g
-            rel_center_y = ymax_g - center_y
+            pad = 2
 
-            # units -> pixels (image left-top origin)
-            left_px  = rel_xmin * scale_x + offset_x
-            top_px   = rel_ymin * scale_y + offset_y
-            right_px = rel_xmax * scale_x + offset_x
-            bottom_px= rel_ymax * scale_y + offset_y
+            left_px_i = int(max(0, math.floor(left_px))) - pad
+            top_px_i = int(max(0, math.floor(top_px))) - pad
+            right_px_i = int(min(img_w - 1, math.ceil(right_px))) + pad
+            bottom_px_i = int(min(img_h - 1, math.ceil(bottom_px))) + pad
 
-            left_px_i   = int(max(0, round(left_px)))
-            top_px_i    = int(max(0, round(top_px)))
-            right_px_i  = int(min(img_w - 1, round(right_px)))
-            bottom_px_i = int(min(img_h - 1, round(bottom_px)))
+            center_x_px = (left_px + right_px) / 2.0
+            center_y_px = (top_px + bottom_px) / 2.0
 
             components[label] = {
-                'label': label,
+                'label': comp_type,
                 'type': comp_type,
                 'class': elem.__class__.__name__,
                 'global_bbox_units': (exmin, eymin, exmax, eymax),
-                'relative_bbox_units_from_drawing_topleft': (rel_xmin, rel_ymin, rel_xmax, rel_ymax),
-                'relative_center_units_from_drawing_topleft': (rel_center_x, rel_center_y),
-                'bbox_pixels_from_image_topleft': (left_px_i, top_px_i, right_px_i, bottom_px_i)
+                'bbox_pixels_from_image_topleft': (left_px_i, top_px_i, right_px_i, bottom_px_i),
+                'center_pixels_from_image_topleft': (center_x_px, center_y_px)
             }
 
-            bboxes_pixel_simple[label] = (left_px_i, top_px_i, right_px_i, bottom_px_i)
-
-        # 在图片上画 bbox
+        # 画矩形框并保存可视化图
+        bbox_image = os.path.splitext(output_image)[0] + "_bbox.png"
         vis = img.copy()
         draw = ImageDraw.Draw(vis)
-        line_w = max(1, int(min(img_w, img_h) * 0.004))
-        for info in components.values():
-            if 'bbox_pixels_from_image_topleft' not in info:
-                continue
-            l,t,r,b = info['bbox_pixels_from_image_topleft']
-            for w in range(line_w):
-                draw.rectangle([l-w, t-w, r+w, b+w], outline=(255,0,0))
-        out_bbox_img = os.path.splitext(output_file)[0] + "_bbox.png"
-        vis.save(out_bbox_img)
+        line_w = max(1, int(min(img_w, img_h) * box_line_frac))
+        if draw_boxes:
+            for info in components.values():
+                if 'bbox_pixels_from_image_topleft' not in info:
+                    continue
+                l,t,r,b = info['bbox_pixels_from_image_topleft']
+                for w in range(line_w):
+                    draw.rectangle([l-w, t-w, r+w, b+w], outline=box_color)
+        vis.save(bbox_image)
 
-        # 写 JSON
-        out_data = {
-            'image': {
-                'file': output_file,
-                'bbox_image': out_bbox_img,
-                'width_px': img_w,
-                'height_px': img_h,
-                'content_bbox_px': (content_left, content_top, content_right, content_bottom)
-            },
-            'drawing_bbox_units': (xmin_g, ymin_g, xmax_g, ymax_g),
+        # 返回结构
+        result = {
+            'image_file': output_image,
+            'bbox_image_file': bbox_image,
+            'img_w': img_w,
+            'img_h': img_h,
+            'content_bbox_px': (content_left, content_top, content_right, content_bottom),
+            'drawing_bbox_units': drawing_bbox_units,
             'scale': {'scale_x_px_per_unit': scale_x, 'scale_y_px_per_unit': scale_y, 'offset_px': (offset_x, offset_y)},
-            'components': components
+            'components': components,
+            'inserted': inserted  # 如果以后需要
         }
-        with open(json_out, 'w', encoding='utf-8') as jf:
-            json.dump(out_data, jf, ensure_ascii=False, indent=2)
+        return result
 
-        print(f"已保存：图像 {output_file}，带 bbox 图片 {out_bbox_img}，完整 JSON {json_out}")
-        return output_file, out_bbox_img, json_out
-        
 
     def print_collision_info(self):
         """打印碰撞检测和调整信息"""

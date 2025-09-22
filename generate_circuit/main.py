@@ -87,7 +87,7 @@ class CircuitLayoutManager:
 
         collision_free_circuit_file = os.path.join(
             self.output_dir, 'collision_free_circuit.png')
-        collision_detector.draw_collision_free_circuit(
+        self.result = collision_detector.draw_collision_free_circuit(
             collision_free_circuit_file)
 
         print(f"✓ 避免碰撞的电路图已保存: {collision_free_circuit_file}")
@@ -107,6 +107,8 @@ class CircuitLayoutManager:
             self.output_dir, 'complete_layout.json')
         coordinates_file = os.path.join(
             self.output_dir, 'component_coordinates.json')
+        component_boxes_file = os.path.join(
+            self.output_dir, 'components_bbox.json')
         summary_file = os.path.join(self.output_dir, 'layout_summary.txt')
         yolo_annotation_file = os.path.join(
             self.output_dir, 'yolo_annotations.txt')
@@ -117,7 +119,7 @@ class CircuitLayoutManager:
         position_recorder.save_layout_json(layout_json_file)
         position_recorder.save_component_coordinates(coordinates_file)
         position_recorder.generate_summary_report(summary_file)
-
+        position_recorder.save_components_boxes_json(self.result, component_boxes_file)
         yolo_result = position_recorder.save_yolo_annotations(
             yolo_annotation_file, yolo_classes_file)
         position_recorder.save_yolo_dataset_info(yolo_info_file)

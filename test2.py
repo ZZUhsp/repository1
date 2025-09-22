@@ -16,6 +16,11 @@ class AIc(Element):
         'plblofst': 0.075,
         'plblsize': 11
     }
+
+    # 参数列表
+    OFFSET_FACTOR = 1 / 14.0             # 相当于 d = min(w,h) * OFFSET_FACTOR
+    RECT_H_FRAC = 0.06                # rect_h = RECT_H_FRAC * min(w,h)
+
     def __init__(self,
                  size: Optional[XY] = None,
                  pins: Optional[Sequence[IcPin]] = None,
@@ -176,7 +181,7 @@ class AIc(Element):
         boxw = max(lengths.get('T', 0.), lengths.get('B', 0.), 2+self.params['edgepadW'], labelw)
         self._sizeauto = boxw, boxh
 
-        d = min(boxw, boxh) / 14.0
+        d = min(boxw, boxh) * self.OFFSET_FACTOR
         # Adjust pad for the shorter of the two parallel sides
         for side in ['L', 'R']:
             side = cast(Side, side)
@@ -190,7 +195,7 @@ class AIc(Element):
 
     def _autopinlayout(self) -> None:
         ''' Determine pin layout when box size is specified '''
-        d = min(self.size[0], self.size[1]) / 14.0
+        d = min(self.size[0], self.size[1]) * self.OFFSET_FACTOR
         for side in ['L', 'R', 'T', 'B']:
             side = cast(Side, side)
             sideparam = replace(self.usersides.get(side, self._dflt_side))
@@ -223,7 +228,7 @@ class AIc(Element):
         self.segments.append(Segment(path))
 
         # 与外边框的距离
-        radius = min(w, h) / 14.0
+        radius = min(w, h) * self.OFFSET_FACTOR
         self.radius = radius
         # 内边框的矩形
         inner_path = [Point((radius, radius)), Point((w-radius, radius)), Point((w-radius, h-radius)), Point((radius, h-radius)), Point((radius, radius))]
@@ -233,7 +238,7 @@ class AIc(Element):
 
     def _pinpos(self, side: Side, pin: IcPin, num: int) -> Point:
         ''' Get XY position of pin '''
-        d = min(self._icbox.w, self._icbox.h) / 14.0
+        d = min(self._icbox.w, self._icbox.h) * self.OFFSET_FACTOR
         sidesetup = self.sides.get(side, self._dflt_side)
         spacing = sidesetup.spacing if sidesetup.spacing > 0 else 0.6
         if pin.slot:
@@ -322,7 +327,7 @@ class AIc(Element):
 
         # Label (inside the box)
         if pin.name and pin.name != '':
-            d = min(self._icbox.w, self._icbox.h) / 14.0
+            d = min(self._icbox.w, self._icbox.h) * self.OFFSET_FACTOR
             pofst = {'L': Point((sidesetup.label_ofst + d, 0)),
                      'R': Point((-sidesetup.label_ofst - d, 0)),
                      'T': Point((0, -sidesetup.label_ofst - d)),
@@ -343,8 +348,9 @@ class AIc(Element):
                 rotation=pin.rotation,
                 rotation_mode='default', href=pin.href, decoration=pin.decoration))
         
-        rect_h = 0.06 * min(self._icbox.w, self._icbox.h)
-        d = min(self._icbox.w, self._icbox.h) / 14.0
+        # 矩形的大小也是 1/14 的短边长
+        rect_h = self.RECT_H_FRAC * min(self._icbox.w, self._icbox.h)
+        d = min(self._icbox.w, self._icbox.h) * self.OFFSET_FACTOR
 
         if side == 'L':
             # rectangle extends left from chip edge
@@ -352,23 +358,19 @@ class AIc(Element):
             y0 = xy[1] - rect_h / 2
             y1 = xy[1] + rect_h / 2
             rect_pts = [Point((xy[0], y1)), Point((x0, y1)), Point((x0, y0)), Point((xy[0], y0))]
-            # anchorpos = Point((x0, y0 + rect_h/2)) 
         elif side == 'R':
             x0 = xy[0] - d
             y0 = xy[1] - rect_h / 2
             y1 = xy[1] + rect_h / 2
             rect_pts = [Point((xy[0], y1)), Point((x0, y1)), Point((x0, y0)), Point((xy[0], y0))]
-            # anchorpos = Point((x0 + rect_ext, y0 + rect_h/2))
         elif side == 'T':
             x0 = xy[0] - rect_h / 2
             y0 = xy[1]
             rect_pts = [Point((x0, y0)), Point((x0, y0 - d)), Point((x0 + rect_h, y0 - d)), Point((x0 + rect_h, y0))]
-            # anchorpos = Point((x0 + rect_h/2, y0 + rect_ext))
         else:  # 'B'
             x0 = xy[0] - rect_h / 2
             y0 = xy[1]
             rect_pts = [Point((x0, y0)), Point((x0, y0 + d)), Point((x0 + rect_h, y0 + d)), Point((x0 + rect_h, y0))]
-            # anchorpos = Point((x0 + rect_h/2, y0))
 
         # draw rectangle
         self.segments.append(Segment(rect_pts))
@@ -417,7 +419,7 @@ class AIc(Element):
         return super()._place(dwgxy, dwgtheta, **dwgparams)
 
 
-def test_ic_fixed():
+def test_aic_fixed():
 
     with schemdraw.Drawing() as d:
         d.config(fontsize=12)
@@ -451,23 +453,5 @@ def test_ic_fixed():
         elm.LED().flip().toy(BOT.start)
         elm.Line().tox(BOT.start)
 
-    # with schemdraw.Drawing() as d:
-    #     d.config(fontsize=12)
-    #     T = (elm.AIc()
-    #         .pin(name='TRG', side='left', pin='2')
-    #         .pin(name='THR', side='left', pin='6')
-    #         .pin(name='DIS', side='left', pin='7')
-    #         .pin(name='CTL', side='right', pin='5')
-    #         .pin(name='OUT', side='right', pin='3')
-    #         .pin(name='RST', side='top', pin='4')
-    #         .pin(name='Vcc', side='top', pin='8')
-    #         .pin(name='GND', side='bot', pin='1')
-    #         .label('555'))
-    
-    # draw and save
-    # with Drawing() as d:
-    #     d += ic
-    #     fig = d.draw()   
-    #     plt.show()     
 
-test_ic_fixed()
+test_aic_fixed()

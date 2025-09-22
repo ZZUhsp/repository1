@@ -282,6 +282,30 @@ class PositionRecorder:
         print(f"组件坐标已保存到 {output_file}")
         return output_file
 
+    def save_components_boxes_json(self, result_dict: Dict[str, Any], json_out: str = 'components_bbox.json'):
+        """
+        result_dict 为 draw_collision_free_circuit 返回的 dict。
+        """
+        if not isinstance(result_dict, dict):
+            raise TypeError("result_dict 必须是 draw_circuit_and_boxes 的返回值（dict）")
+
+        out_data = {
+            'image': {
+                'file': result_dict.get('image_file'),
+                'bbox_image': result_dict.get('bbox_image_file'),
+                'width_px': result_dict.get('img_w'),
+                'height_px': result_dict.get('img_h'),
+                'content_bbox_px': result_dict.get('content_bbox_px'),
+            },
+            'drawing_bbox_units': result_dict.get('drawing_bbox_units'),
+            'scale': result_dict.get('scale'),
+            'components': result_dict.get('components')
+        }
+        with open(json_out, 'w', encoding='utf-8') as jf:
+            json.dump(out_data, jf, ensure_ascii=False, indent=2)
+        return json_out
+        
+
     def generate_summary_report(self, output_file='layout_summary.txt'):
         """生成布局摘要报告"""
         layout_data = self.generate_layout_json()

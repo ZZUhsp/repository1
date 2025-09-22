@@ -32,6 +32,7 @@ data/
   - 检测器件与芯片的重叠
   - 使用螺旋式搜索算法调整器件位置
   - 生成避免碰撞的电路图
+  - 每个器件周围画上bounding box
 
 ### 第三部分：position_recorder.py
 
@@ -126,12 +127,14 @@ python position_recorder.py
 
 1. **basic_circuit.png** - 基础电路图（未经碰撞检测）
 2. **collision_free_circuit.png** - 避免碰撞的最终电路图
-3. **complete_layout.json** - 完整的布局信息 JSON 文件
-4. **component_coordinates.json** - 简化的组件坐标信息
-5. **layout_summary.txt** - 布局摘要报告
-6. **yolo_annotations.txt** - YOLO 格式的标注文件
-7. **yolo_classes.txt** - YOLO 类别映射文件
-8. **yolo_dataset_info.json** - YOLO 数据集详细信息
+3. **collision_free_circuit_bbox.png** - 添加边界框的电路图
+4. **complete_layout.json** - 完整的布局信息 JSON 文件
+5. **component_coordinates.json** - 简化的组件坐标信息
+6. **layout_summary.txt** - 布局摘要报告
+7. **yolo_annotations.txt** - YOLO 格式的标注文件
+8. **yolo_classes.txt** - YOLO 类别映射文件
+9. **yolo_dataset_info.json** - YOLO 数据集详细信息
+10. **components_bbox.json** - 器件边界框信息
 
 ## JSON 参数说明
 

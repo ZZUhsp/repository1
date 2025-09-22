@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 
 class OIc(Element):
+    # 边定义的默认参数
     _element_defaults = {
         'pinspacing': 0.0,
         'edgepadH': 0.5,
@@ -16,7 +17,12 @@ class OIc(Element):
         'plblofst': 0.075,
         'plblsize': 11
     }
-
+    
+    # 命名常量
+    D_SLANT_FACTOR = 0.15 # 斜边对应的边长占min(w, h)的比例
+    BASE_MARGIN_FRAC = 0.07 # 最边上的引脚占min(w, h)的比例
+    INNER_OFFSETS = (0.0244, 0.0427) # 内部八边形偏移量占min(w, h)的比例
+    
     def __init__(self,
                  size: Optional[XY] = None,
                  pins: Optional[Sequence[IcPin]] = None,
@@ -33,13 +39,13 @@ class OIc(Element):
         self.sides: dict[Side, IcSide] = {}
         # 包含所有侧面默认布局参数 如引脚间距、引线长度、标签偏移量和大小
         self._dflt_side = IcSide(
-            self.params.get('pinspacing', 0),
-            self.params.get('edgepadH', .25),
-            self.params.get('leadlen', .5),
-            self.params.get('lofst', .15),
-            self.params.get('lsize', 14),
-            self.params.get('plblofst', .05),
-            self.params.get('plblsize', 11))
+            self.params.get('pinspacing', 0), # spacing 0
+            self.params.get('edgepadH', .25), # pad 0.5
+            self.params.get('leadlen', .5), # leadlen 0.5
+            self.params.get('lofst', .15), # label_ofst 0.15
+            self.params.get('lsize', 14), # label_size 14
+            self.params.get('plblofst', .05), # pinlabel_ofst 0.075
+            self.params.get('plblsize', 11)) # pinlabel_size 11
 
         if pins is not None:
             for pin in pins:
@@ -161,7 +167,8 @@ class OIc(Element):
             sideparam = replace(self.usersides.get(s, self._dflt_side))
             self.sides[cast(Side, s)] = sideparam
             if sideparam.spacing == 0:
-                sideparam.spacing = 0.0
+                sideparam.spacing = 0.6
+            # 如果没有pad / spacing 则使用默认值
             needed = sideparam.pad * 2 + sideparam.spacing * max(0, (self.pincount[s] - 1))
             side_needed[s] = needed
             maxlabel = 0.
@@ -177,11 +184,11 @@ class OIc(Element):
         # initial guess to avoid circular d dependence
         w_guess = max(usable_TB_needed, 2.0)
         h_guess = max(usable_LR_needed, 2.0)
-        d_guess = 0.15 * min(w_guess, h_guess)
+        d_guess = self.D_SLANT_FACTOR * min(w_guess, h_guess)
 
         w = usable_TB_needed + 2 * d_guess
         h = usable_LR_needed + 2 * d_guess
-        d = 0.15 * min(w, h)
+        d = self.D_SLANT_FACTOR * min(w, h)
         w = max(usable_TB_needed + 2 * d, 2.0)
         h = max(usable_LR_needed + 2 * d, 2.0)
         self._sizeauto = (w, h)
@@ -190,7 +197,7 @@ class OIc(Element):
         usable_h = max(0.0, h - 2 * d)
 
         # default margin: a fractin of the short side
-        base_margin = 0.07 * min(w, h)
+        base_margin = self.BASE_MARGIN_FRAC * min(w, h)
         for s in ['L', 'R']:
             sp = self.sides[cast(Side, s)]
             n = self.pincount[s]
@@ -242,10 +249,10 @@ class OIc(Element):
     def _autopinlayout(self) -> None:
         """When size explicitly provided: distribute pins inside [margin, usable-margin]."""
         w, h = self.size
-        d = 0.15 * min(w, h)
+        d = self.D_SLANT_FACTOR * min(w, h)
         usable_w = max(0.0, w - 2 * d)
         usable_h = max(0.0, h - 2 * d)
-        base_margin = 0.07 * min(w, h)
+        base_margin = self.BASE_MARGIN_FRAC * min(w, h)
 
         for side in ['L', 'R', 'T', 'B']:
             s = cast(Side, side)
@@ -283,7 +290,7 @@ class OIc(Element):
             w, h = (2, 3)
 
         # 斜边的缩进
-        d = 0.15 * min(w, h)
+        d = self.D_SLANT_FACTOR * min(w, h)
         path = [
             Point((d, 0)),
             Point((w - d, 0)),
@@ -302,15 +309,15 @@ class OIc(Element):
         # 画内八边形
         for i in range(2):
             if i == 0:
-                offset = 0.0244 * min(w, h)
+                offset = self.INNER_OFFSETS[0] * min(w, h)
             else:
-                offset = 0.0427 * min(w, h)
+                offset = self.INNER_OFFSETS[1] * min(w, h)
             # offset = (i+1) * 0.2
             w_i = w - 2 * offset
             h_i = h - 2 * offset
             if w_i <= 0 or h_i <= 0:
                 break
-            d_i = 0.15 * min(w_i, h_i)
+            d_i = self.D_SLANT_FACTOR * min(w_i, h_i)
             x0 = offset
             y0 = offset
             pts_i = [
@@ -344,11 +351,12 @@ class OIc(Element):
 
         w = self._icbox.w
         h = self._icbox.h
-        d = 0.15 * min(w, h)
+
+        d = self.D_SLANT_FACTOR * min(w, h)
         usable_len = (w - 2 * d) if side in ('T', 'B') else (h - 2 * d)
 
         # compute margin consistent with layout stage
-        base_margin = 0.07 * min(w, h)
+        base_margin = self.BASE_MARGIN_FRAC * min(w, h)
         margin = min(base_margin, usable_len / 2.0)
 
         if self.pincount[side] <= 1:
@@ -469,7 +477,7 @@ class OIc(Element):
                 ty = max(min_y, min(max_y, target[1]))
                 target = Point((tx, ty))
 
-                # 自动缩放字号（如果文字宽度比可用宽度大）
+                # 自动缩放字号
                 lblsize = pin.lblsize if pin.lblsize is not None else sidesetup.label_size
                 try:
                     txt_w = text_size(pin.name, size=lblsize)[0] / 72 * 2
@@ -576,7 +584,7 @@ class OIc(Element):
         return super()._place(dwgxy, dwgtheta, **dwgparams)
     
 
-def test_ic_fixed():
+def test_oic_fixed():
     with schemdraw.Drawing() as d:
         d.config(fontsize=12)
         T = (OIc()
@@ -608,4 +616,4 @@ def test_ic_fixed():
         elm.Resistor().right().at(T.OUT).label('330')
         elm.LED().flip().toy(BOT.start)
         elm.Line().tox(BOT.start)
-test_ic_fixed()
+test_oic_fixed()

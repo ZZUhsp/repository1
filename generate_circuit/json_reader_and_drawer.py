@@ -180,7 +180,7 @@ class JsonReaderAndDrawer:
 
             # 获取schemdraw参数
             schemdraw_params = component.get('schemdraw_params', {})
-
+            
             try:
                 if comp_type == 'voltage_source':
                     element = elm.SourceV().at(position)
