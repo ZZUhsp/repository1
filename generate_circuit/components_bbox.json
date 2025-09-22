@@ -1,0 +1,327 @@
+{
+  "image": {
+    "file": "data\\collision_free_circuit.png",
+    "bbox_image": "data\\collision_free_circuit_bbox.png",
+    "width_px": 675,
+    "height_px": 678,
+    "content_bbox_px": [
+      0,
+      0,
+      675,
+      678
+    ]
+  },
+  "drawing_bbox_units": [
+    -8.72916512459885,
+    -10.1,
+    9.961215932167725,
+    8.7
+  ],
+  "scale": {
+    "scale_x_px_per_unit": 36.11483350445796,
+    "scale_y_px_per_unit": 36.06382978723405,
+    "offset_px": [
+      0,
+      0
+    ]
+  },
+  "components": {
+    "IC": {
+      "label": "IC",
+      "type": "IC",
+      "class": "Ic",
+      "global_bbox_units": [
+        -0.3,
+        -0.3555555555555555,
+        4.35,
+        6.355555555555555
+      ],
+      "relative_bbox_units_from_drawing_topleft": [
+        8.42916512459885,
+        2.344444444444444,
+        13.07916512459885,
+        9.055555555555555
+      ],
+      "relative_center_units_from_drawing_topleft": [
+        10.75416512459885,
+        5.699999999999999
+      ],
+      "bbox_pixels_from_image_topleft": [
+        304,
+        85,
+        472,
+        327
+      ]
+    },
+    "2": {
+      "label": "2",
+      "type": "capacitor",
+      "class": "Capacitor",
+      "global_bbox_units": [
+        -6.763139720814413,
+        1.666666666666666,
+        -5.163139720814414,
+        2.166666666666666
+      ],
+      "relative_bbox_units_from_drawing_topleft": [
+        1.9660254037844371,
+        6.533333333333333,
+        3.5660254037844368,
+        7.033333333333333
+      ],
+      "relative_center_units_from_drawing_topleft": [
+        2.766025403784437,
+        6.783333333333333
+      ],
+      "bbox_pixels_from_image_topleft": [
+        71,
+        236,
+        129,
+        254
+      ]
+    },
+    "4": {
+      "label": "4",
+      "type": "resistor",
+      "class": "ResistorIEEE",
+      "global_bbox_units": [
+        -8.62916512459885,
+        -3.000000000000001,
+        -7.029165124598851,
+        -2.500000000000001
+      ],
+      "relative_bbox_units_from_drawing_topleft": [
+        0.09999999999999964,
+        11.2,
+        1.6999999999999993,
+        11.7
+      ],
+      "relative_center_units_from_drawing_topleft": [
+        0.8999999999999995,
+        11.45
+      ],
+      "bbox_pixels_from_image_topleft": [
+        4,
+        404,
+        61,
+        422
+      ]
+    },
+    "3": {
+      "label": "3",
+      "type": "capacitor",
+      "class": "Capacitor",
+      "global_bbox_units": [
+        -2.000000000000003,
+        -6.8121778264910695,
+        -0.400000000000003,
+        -6.3121778264910695
+      ],
+      "relative_bbox_units_from_drawing_topleft": [
+        6.729165124598847,
+        15.012177826491069,
+        8.329165124598848,
+        15.512177826491069
+      ],
+      "relative_center_units_from_drawing_topleft": [
+        7.529165124598848,
+        15.262177826491069
+      ],
+      "bbox_pixels_from_image_topleft": [
+        243,
+        541,
+        301,
+        559
+      ]
+    },
+    "8": {
+      "label": "8",
+      "type": "voltage_source",
+      "class": "SourceV",
+      "global_bbox_units": [
+        -0.49999999999999967,
+        7.0,
+        0.5000000000000003,
+        8.6
+      ],
+      "relative_bbox_units_from_drawing_topleft": [
+        8.22916512459885,
+        0.09999999999999964,
+        9.22916512459885,
+        1.6999999999999993
+      ],
+      "relative_center_units_from_drawing_topleft": [
+        8.72916512459885,
+        0.8999999999999995
+      ],
+      "bbox_pixels_from_image_topleft": [
+        297,
+        4,
+        333,
+        61
+      ]
+    },
+    "1": {
+      "label": "1",
+      "type": "ground",
+      "class": "Ground",
+      "global_bbox_units": [
+        -5.879165124598851,
+        -6.390000000000001,
+        -5.379165124598851,
+        -5.750000000000001
+      ],
+      "relative_bbox_units_from_drawing_topleft": [
+        2.8499999999999996,
+        14.45,
+        3.3499999999999996,
+        15.09
+      ],
+      "relative_center_units_from_drawing_topleft": [
+        3.0999999999999996,
+        14.77
+      ],
+      "bbox_pixels_from_image_topleft": [
+        103,
+        521,
+        121,
+        544
+      ]
+    },
+    "5": {
+      "label": "5",
+      "type": "resistor",
+      "class": "ResistorIEEE",
+      "global_bbox_units": [
+        -5.749999999999999,
+        5.830127018922194,
+        -5.249999999999999,
+        7.430127018922194
+      ],
+      "relative_bbox_units_from_drawing_topleft": [
+        2.9791651245988513,
+        1.269872981077805,
+        3.4791651245988513,
+        2.8698729810778056
+      ],
+      "relative_center_units_from_drawing_topleft": [
+        3.2291651245988513,
+        2.069872981077806
+      ],
+      "bbox_pixels_from_image_topleft": [
+        108,
+        46,
+        126,
+        103
+      ]
+    },
+    "6": {
+      "label": "6",
+      "type": "resistor",
+      "class": "ResistorIEEE",
+      "global_bbox_units": [
+        2.7499999999999987,
+        -7.5,
+        3.2499999999999987,
+        -5.9
+      ],
+      "relative_bbox_units_from_drawing_topleft": [
+        11.479165124598849,
+        14.6,
+        11.979165124598849,
+        16.2
+      ],
+      "relative_center_units_from_drawing_topleft": [
+        11.729165124598849,
+        15.399999999999999
+      ],
+      "bbox_pixels_from_image_topleft": [
+        415,
+        527,
+        433,
+        584
+      ]
+    },
+    "7": {
+      "label": "7",
+      "type": "LED",
+      "class": "LED",
+      "global_bbox_units": [
+        -0.8125000000000013,
+        -10.0,
+        0.24999999999999867,
+        -8.4
+      ],
+      "relative_bbox_units_from_drawing_topleft": [
+        7.916665124598849,
+        17.1,
+        8.979165124598849,
+        18.7
+      ],
+      "relative_center_units_from_drawing_topleft": [
+        8.447915124598849,
+        17.9
+      ],
+      "bbox_pixels_from_image_topleft": [
+        286,
+        617,
+        324,
+        674
+      ]
+    },
+    "9": {
+      "label": "9",
+      "type": "voltage_source",
+      "class": "SourceV",
+      "global_bbox_units": [
+        6.500000000000001,
+        -8.428203230275509,
+        7.500000000000001,
+        -6.828203230275509
+      ],
+      "relative_bbox_units_from_drawing_topleft": [
+        15.22916512459885,
+        15.528203230275508,
+        16.22916512459885,
+        17.12820323027551
+      ],
+      "relative_center_units_from_drawing_topleft": [
+        15.72916512459885,
+        16.32820323027551
+      ],
+      "bbox_pixels_from_image_topleft": [
+        550,
+        560,
+        586,
+        618
+      ]
+    },
+    "10": {
+      "label": "10",
+      "type": "voltage_source",
+      "class": "SourceV",
+      "global_bbox_units": [
+        8.861215932167726,
+        -2.2500000000000036,
+        9.861215932167726,
+        -0.6500000000000035
+      ],
+      "relative_bbox_units_from_drawing_topleft": [
+        17.590381056766574,
+        9.350000000000003,
+        18.590381056766574,
+        10.950000000000003
+      ],
+      "relative_center_units_from_drawing_topleft": [
+        18.090381056766574,
+        10.150000000000002
+      ],
+      "bbox_pixels_from_image_topleft": [
+        635,
+        337,
+        671,
+        395
+      ]
+    }
+  }
+}

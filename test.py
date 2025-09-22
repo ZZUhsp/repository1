@@ -1,7 +1,7 @@
 from schemdraw.elements.intcircuits import *
 import schemdraw.elements as elm
 from schemdraw import Drawing
-
+import schemdraw
 import matplotlib.pyplot as plt
 
 
@@ -516,23 +516,19 @@ class OIc(Element):
             y0 = xy[1] - rect_h / 2
             y1 = xy[1] + rect_h / 2
             rect_pts = [Point((xy[0], y1)), Point((x0, y1)), Point((x0, y0)), Point((xy[0], y0))]
-            # anchorpos = Point((x0, y0 + rect_h/2))  # 外侧中点
         elif side == 'R':
             x0 = xy[0] - d
             y0 = xy[1] - rect_h / 2
             y1 = xy[1] + rect_h / 2
             rect_pts = [Point((xy[0], y1)), Point((x0, y1)), Point((x0, y0)), Point((xy[0], y0))]
-            # anchorpos = Point((x0 + rect_ext, y0 + rect_h/2))
         elif side == 'T':
             x0 = xy[0] - rect_h / 2
             y0 = xy[1]
             rect_pts = [Point((x0, y0)), Point((x0, y0 - d)), Point((x0 + rect_h, y0 - d)), Point((x0 + rect_h, y0))]
-            # anchorpos = Point((x0 + rect_h/2, y0 + rect_ext))
         else:  # 'B'
             x0 = xy[0] - rect_h / 2
             y0 = xy[1]
             rect_pts = [Point((x0, y0)), Point((x0, y0 + d)), Point((x0 + rect_h, y0 + d)), Point((x0 + rect_h, y0))]
-            # anchorpos = Point((x0 + rect_h/2, y0))
 
         self.segments.append(Segment(rect_pts))
 
@@ -581,24 +577,35 @@ class OIc(Element):
     
 
 def test_ic_fixed():
-    ic = OIc(size = (10, 10), pins=[
-        elm.intcircuits.IcPin(side='L', name='IN1', pin='1'),
-        elm.intcircuits.IcPin(side='L', name='IN2', pin='2'),
-        elm.intcircuits.IcPin(side='L', name='IN3', pin='3'),
-        elm.intcircuits.IcPin(side='R', name='OUT1', pin='7'),
-        elm.intcircuits.IcPin(side='R', name='OUT2', pin='8'),
-        elm.intcircuits.IcPin(side='R', name='OUT3', pin='9'),
-        elm.intcircuits.IcPin(side='R', name='OUT4', pin='10'),
-        elm.intcircuits.IcPin(side='R', name='OUT5', pin='11'),
-        elm.intcircuits.IcPin(side='R', name='OUT5', pin='12'),
-        elm.intcircuits.IcPin(side='T', name='VCC', pin='14'),
-        elm.intcircuits.IcPin(side='B', name='GND', pin='G'),
-    ]).label('MyChipFixed')
-    
-    # draw and save
-    with Drawing() as d:
-        d += ic
-        fig = d.draw()   # 返回 matplotlib Figure
-        plt.show()       # 在 Console 里显示
-
+    with schemdraw.Drawing() as d:
+        d.config(fontsize=12)
+        T = (OIc()
+            .side('L', spacing=1.5, pad=1.5, leadlen=1)
+            .side('R', spacing=2)
+            .side('T', pad=1.5, spacing=1)
+            .pin(name='TRG', side='left', pin='2')
+            .pin(name='THR', side='left', pin='6')
+            .pin(name='DIS', side='left', pin='7')
+            .pin(name='CTL', side='right', pin='5')
+            .pin(name='OUT', side='right', pin='3')
+            .pin(name='RST', side='top', pin='4')
+            .pin(name='Vcc', side='top', pin='8')
+            .pin(name='GND', side='bot', pin='1')
+            .label('555'))
+        BOT = elm.Ground().at(T.GND)
+        elm.Dot()
+        elm.Resistor().endpoints(T.DIS, T.THR).label('Rb').idot()
+        elm.Resistor().up().at(T.DIS).label('Ra').label('+Vcc', 'right')
+        elm.Line().endpoints(T.THR, T.TRG)
+        elm.Capacitor().at(T.TRG).toy(BOT.start).label('C')
+        elm.Line().tox(BOT.start)
+        elm.Capacitor().at(T.CTL).toy(BOT.start).label(r'.01$\mu$F', 'bottom').dot()
+        elm.Dot().at(T.DIS)
+        elm.Dot().at(T.THR)
+        elm.Dot().at(T.TRG)
+        elm.Line().endpoints(T.RST,T.Vcc).dot()
+        elm.Line().up(d.unit/4).label('+Vcc', 'right')
+        elm.Resistor().right().at(T.OUT).label('330')
+        elm.LED().flip().toy(BOT.start)
+        elm.Line().tox(BOT.start)
 test_ic_fixed()

@@ -1,0 +1,171 @@
+{
+  "chip": {
+    "model": "555",
+    "pin_count": 9,
+    "pin_definitions": [
+      { "number": 1, "name": "GND" },
+      { "number": 2, "name": "THR" },
+      { "number": 3, "name": "OUT" },
+      { "number": 4, "name": "RST" },
+      { "number": 5, "name": "CTL" },
+      { "number": 6, "name": "TRG" },
+      { "number": 7, "name": "DIS" },
+      { "number": 8, "name": "Vcc" },
+      { "number": 9, "name": "Vdd" }
+    ]
+  },
+  "components": [
+    {
+      "id": "1",
+      "type": "ground",
+      "subtype": "ground_signal",
+      "value": " ",
+      "ports": { "port1": "port1" },
+      "label": " "
+    },
+    {
+      "id": "2",
+      "type": "capacitor",
+      "value": " ",
+      "ports": { "port1": "port1", "port2": "port2" },
+      "label": " "
+    },
+    {
+      "id": "3",
+      "type": "capacitor",
+      "value": ".01uF",
+      "ports": { "port1": "port1", "port2": "port2" },
+      "label": " "
+    },
+    {
+      "id": "4",
+      "type": "resistor",
+      "value": " ",
+      "ports": { "port1": "port1", "port2": "port2" },
+      "label": " "
+    },
+    {
+      "id": "5",
+      "type": "resistor",
+      "value": " ",
+      "ports": { "port1": "port1", "port2": "port2" },
+      "label": " "
+    },
+    {
+      "id": "6",
+      "type": "resistor",
+      "value": "330",
+      "ports": { "port1": "port1", "port2": "port2" },
+      "label": " "
+    },
+    {
+      "id": "7",
+      "type": "LED",
+      "value": " ",
+      "ports": { "port1": "positive", "port2": "negative" },
+      "label": " "
+    },
+    {
+      "id": "8",
+      "type": "voltage_source",
+      "value": " ",
+      "ports": { "port1": "port1" },
+      "label": " "
+    },
+    {
+      "id": "9",
+      "type": "voltage_source",
+      "value": " ",
+      "ports": { "port1": "port1" },
+      "label": " "
+    },
+    {
+      "id": "10",
+      "type": "voltage_source",
+      "value": " ",
+      "ports": { "port1": "port1" },
+      "label": " "
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "net1",
+      "net_type": "IC_copmponent",
+      "connections": [
+        { "type": "chip_pin", "pin_number": 1, "pin_name": "GND" },
+        { "type": "component_port", "component_id": "1", "port": "port1" },
+        { "type": "component_port", "component_id": "2", "port": "port1" },
+        { "type": "component_port", "component_id": "3", "port": "port1" },
+        { "type": "component_port", "component_id": "7", "port": "negative" }
+      ]
+    },
+    {
+      "net_id": "net2",
+      "net_type": "IC_copmponent",
+      "connections": [
+        { "type": "chip_pin", "pin_number": 2, "pin_name": "THR" },
+        { "type": "chip_pin", "pin_number": 6, "pin_name": "TRG" },
+        { "type": "component_port", "component_id": "2", "port": "port2" },
+        { "type": "component_port", "component_id": "4", "port": "port1" }
+      ]
+    },
+    {
+      "net_id": "net3",
+      "net_type": "IC_copmponent",
+      "connections": [
+        { "type": "chip_pin", "pin_number": 7, "pin_name": "DIS" },
+        { "type": "component_port", "component_id": "4", "port": "port2" },
+        { "type": "component_port", "component_id": "5", "port": "port1" }
+      ]
+    },
+    {
+      "net_id": "net4",
+      "net_type": "component_copmponent",
+      "connections": [
+        { "type": "component_port", "component_id": "5", "port": "port2" },
+        { "type": "component_port", "component_id": "10", "port": "port1" }
+      ]
+    },
+    {
+      "net_id": "net5",
+      "net_type": "IC_copmponent",
+      "connections": [
+        { "type": "chip_pin", "pin_number": 4, "pin_name": "RST" },
+        { "type": "chip_pin", "pin_number": 8, "pin_name": "Vcc" },
+        { "type": "component_port", "component_id": "8", "port": "port1" }
+      ]
+    },
+    {
+      "net_id": "net6",
+      "net_type": "IC_copmponent",
+      "connections": [
+        { "type": "chip_pin", "pin_number": 3, "pin_name": "OUT" },
+        { "type": "component_port", "component_id": "6", "port": "port1" }
+      ]
+    },
+    {
+      "net_id": "net7",
+      "net_type": "component_copmponent",
+      "connections": [
+        { "type": "component_port", "component_id": "6", "port": "port2" },
+        { "type": "component_port", "component_id": "7", "port": "positive" }
+      ]
+    },
+    {
+      "net_id": "net8",
+      "net_type": "IC_copmponent",
+      "connections": [
+        { "type": "chip_pin", "pin_number": 5, "pin_name": "CTL" },
+        { "type": "component_port", "component_id": "3", "port": "port2" }
+      ]
+    },
+    {
+      "net_id": "net9",
+      "net_type": "IC_copmponent",
+      "connections": [
+        { "type": "chip_pin", "pin_number": 9, "pin_name": "Vdd" },
+        { "type": "component_port", "component_id": "9", "port": "port1" }
+      ]
+    }
+  ]
+}
